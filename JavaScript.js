@@ -29,12 +29,30 @@ const init = () => {
 		}
 	
 		onUpdate(deltaTime) {}
-		onKeyDown(key) {}
-		onKeyUp(key) {}
-		onMouseMove(x, y) {}
-		onMouseDown() {}
-		onMouseUp() {}
-		onClick() {}
+
+		onClick() {
+			console.log("Click!");
+		}
+
+		onMouseMove(x, y) {
+			console.log("Mouse move!");
+		}
+
+		onMouseDown() {
+			console.log("Mouse down!");
+		}
+
+		onMouseUp() {
+			console.log("Mouse up!");
+		}
+
+		onKeyDown(key) {
+			console.log("Key down!");
+		}
+
+		onKeyUp(key) {
+			console.log("Key up!");
+		}
 	}
 	
 	class MainScene extends Scene {
@@ -69,30 +87,35 @@ const init = () => {
 	}
 	requestAnimationFrame(gameLoop);
 
+	canvas.addEventListener('click', e => {
+		scene.onClick();
+	}, false);
+
 	canvas.addEventListener('mousemove', e => {
-		mouse.x = e.offsetX;
-		mouse.y = e.offsetY;
+		let x = e.offsetX;
+		let y = e.offsetY;
+		mouse.x = x;
+		mouse.y = y;
+		scene.onMouseMove(x, y);
 	});
 
 	canvas.addEventListener('mousedown', e => {
-		console.log("Mouse down!");
+		scene.onMouseDown();
 	});
 
 	canvas.addEventListener('mouseup', e => {
-		console.log("Mouse up!");
+		scene.onMouseUp();
 	});
-	
-	canvas.addEventListener('click', e => {
-		console.log("Click!");
-	}, false);
 	
 	window.addEventListener('keydown', e => {
 		var keyDown = e.keyCode;
 		keys[keyDown] = true;
+		scene.onKeyDown(keyDown);
 	}, false);
 	
 	window.addEventListener('keyup', e => {
 		var keyUp = e.keyCode;
 		keys[keyUp] = false;
+		scene.onKeyUp(keyUp);
 	}, false);
 }
