@@ -1,0 +1,25 @@
+<html>
+<head>
+<title>Blank Page</title>
+  <style>
+	body { 	/ this is a css class meaning elements specified on this line have the following css applied to them
+	position: fixed;
+	overflow: hidden; /  Disable scrollbars /
+	display: block;  	 / No floating content on sides /
+	top: 0px;
+	left: 0px;
+	margin: auto;
+	background-color:black;
+	
+  canvas {
+	position: fixed;	/ difference between fixed and relative is that fixed works with viewport /
+	z-index: -1;	   / I must set the zindex of specific canvas' if I want one to be ontop of the other. currently all canvas' would go over top of body because -1 is before 0 (elements with undeclared zindexes get set to 0 ) /
+ }
+ </style>
+</head>
+
+<body align="center" onload="init();">
+	<canvas id='canvas' width='640' height='480'></canvas>
+	<script src="JavaScript.js"></script>
+</body>
+</html>
