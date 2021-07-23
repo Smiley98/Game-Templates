@@ -93,34 +93,35 @@ const init = () => {
 		const height = 40;
 		return new Button(w / 2 - width / 2, h / 2 - height / 2, width, height, onClick);
 	}
-
-	const SceneType = {
-		INVALID: -1,
-		BEGIN: 0,
-		MIDDLE: 1,
-		END: 2
-	}
 	
 	class Scene {
 		constructor() {
 			this.defaultHandlerLogging = false;
+			this.transitionAlerts = false;
+		}
+
+		static TYPE = {
+			INVALID: -1,
+			BEGIN: 0,
+			MIDDLE: 1,
+			END: 2
 		}
 
 		static scene = null;
-		static transition(sceneType) {
+		static transition(type) {
 			if (this.scene !== null)
 				this.scene.onFinish();
 
-			switch (sceneType) {
-				case SceneType.BEGIN:
+			switch (type) {
+				case this.TYPE.BEGIN:
 					this.scene = new BeginScene();
 					break
 	
-				case SceneType.MIDDLE:
+				case this.TYPE.MIDDLE:
 					this.scene = new MiddleScene();
 					break
 	
-				case SceneType.END:
+				case this.TYPE.END:
 					this.scene = new EndScene();
 					break
 
@@ -131,10 +132,6 @@ const init = () => {
 
 			if (this.scene !== null)
 				this.scene.onStart();
-		}
-
-		type() {
-			return SceneType.INVALID;
 		}
 
 		onStart() {
@@ -189,20 +186,18 @@ const init = () => {
 			this.transitionButtonColour = null;
 			this.transitionButtonOverlapping = false;
 			this.transitionButton = makeTransitionButton(() => {
-				Scene.transition(SceneType.MIDDLE);
+				Scene.transition(Scene.TYPE.MIDDLE);
 			});
 		}
 
-		type() {
-			return SceneType.BEGIN;
-		}
-
 		onStart() {
-			alert("Begin scene starting.");
+			if (this.transitionAlerts)
+				alert("Begin scene starting.");
 		}
 
 		onFinish() {
-			alert("Begin scene finishing.");
+			if (this.transitionAlerts)
+				alert("Begin scene finishing.");
 		}
 	
 		onUpdate(deltaTime) {
@@ -243,7 +238,7 @@ const init = () => {
 			super();
 			this.transitionButtonColour = 'blue';
 			this.transitionButton = makeTransitionButton(() => {
-				Scene.transition(SceneType.END);
+				Scene.transition(Scene.TYPE.END);
 			});
 
 			const colliderWidth = 69.0;
@@ -255,11 +250,13 @@ const init = () => {
 		}
 
 		onStart() {
-			alert("Middle scene starting.");
+			if (this.transitionAlerts)
+				alert("Middle scene starting.");
 		}
 
 		onFinish() {
-			alert("Middle scene finishing.");
+			if (this.transitionAlerts)
+				alert("Middle scene finishing.");
 		}
 
 		onUpdate(deltaTime) {
@@ -291,16 +288,18 @@ const init = () => {
 			super();
 			this.transitionButtonColour = 'darkgrey';
 			this.transitionButton = makeTransitionButton(() => {
-				Scene.transition(SceneType.BEGIN);
+				Scene.transition(Scene.TYPE.BEGIN);
 			});
 		}
 
 		onStart() {
-			alert("End scene starting.");
+			if (this.transitionAlerts)
+				alert("End scene starting.");
 		}
 
 		onFinish() {
-			alert("End scene finishing.");
+			if (this.transitionAlerts)
+				alert("End scene finishing.");
 		}
 
 		onUpdate(deltaTime) {
@@ -320,7 +319,7 @@ const init = () => {
 
 	//Initialize the desired first scene.
 	//Note that DOM event listeners are registered *after* the scene is initialized because our handlers require a valid Scene object.
-	Scene.transition(SceneType.BEGIN);
+	Scene.transition(Scene.TYPE.BEGIN);
 
 	canvas.addEventListener('click', e => {
 		Scene.scene.onClick(e.offsetX, e.offsetY);
