@@ -36,7 +36,7 @@ const init = () => {
 		if (point.x < box.x) return false;
 		if (point.x > box.x + box.w) return false;
 		if (point.y < box.y) return false;
-		if (poit.y > box.y + box.h) return false;
+		if (point.y > box.y + box.h) return false;
 		return true;
 	}
 
@@ -145,7 +145,7 @@ const init = () => {
 
 		onMouseUp(x, y) {
 			if (this.defaultHandlerLogging)
-				console.log("Dwfault mouse up response: " + x + ", " + y);
+				console.log("Default mouse up response: " + x + ", " + y);
 		}
 
 		onKeyDown(key) {
@@ -162,14 +162,13 @@ const init = () => {
 	class BeginScene extends Scene {
 		constructor() {
 			super();
-			this.cursorColour = null;
-			this.cursorWidth = 40;
-			this.cursorHeight = 30;
+			this.transitionButtonColour = null;
+			this.transitionButtonOverlapping = false;
 
 			let transitionButtonWidth = 60;
 			let transitionButtonHeight = 40;
-			this.transitionButton = new Button(w - transitionButtonWidth / 2, h - transitionButtonHeight / 2, transitionButtonWidth, transitionButtonHeight, () => {
-				this.transition(SceneType.middle);
+			this.transitionButton = new Button(w / 2 - transitionButtonWidth / 2, h / 2 - transitionButtonHeight / 2, transitionButtonWidth, transitionButtonHeight, () => {
+				Scene.transition(SceneType.MIDDLE);
 			});
 		}
 
@@ -184,18 +183,27 @@ const init = () => {
 	
 			//Keyboard and mouse test. In this case it's actually less work to poll events than respond to events.
 			if (keys[32])
-				this.cursorColour = 'blue';
+				this.transitionButtonColour = 'blue';
 			else if (mouseDown)
-				this.cursorColour = 'green';
+				this.transitionButtonColour = 'green';
+			else if (this.transitionButtonOverlapping)
+				this.transitionButtonColour = 'cyan';
 			else
-				this.cursorColour = 'red';
+				this.transitionButtonColour = 'red';
 
-			ctx.fillStyle = this.cursorColour;
-			ctx.fillRect(mouse.x - this.cursorWidth / 2, mouse.y - this.cursorHeight / 2, this.cursorWidth, this.cursorHeight);
+			ctx.fillStyle = this.transitionButtonColour;
+			ctx.fillRect(this.transitionButton.x, this.transitionButton.y, this.transitionButton.w, this.transitionButton.h);
 		}
 
 		onClick(x, y) {
 			this.transitionButton.onClick(new Point(x, y));
+		}
+
+		onMouseMove(x, y) {
+			if (pointCollision(new Point(x, y), this.transitionButton))
+				this.transitionButtonOverlapping = true;
+			else
+				this.transitionButtonOverlapping = false;
 		}
 	}
 
