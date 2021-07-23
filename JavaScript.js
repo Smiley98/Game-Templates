@@ -175,13 +175,20 @@ const init = () => {
 		type() {
 			return SceneType.BEGIN;
 		}
+
+		onStart() {
+			alert("Begin scene starting.");
+		}
+
+		onFinish() {
+			alert("Begin scene finishing.");
+		}
 	
 		onUpdate(deltaTime) {
 			//"Clear" previous frame by rendering over its entirety.
-			ctx.fillStyle = 'white';
 			ctx.fillRect(0, 0, w, h);
 	
-			//Keyboard and mouse test. In this case it's actually less work to poll events than respond to events.
+			//Keyboard, mouse, and overlap polling test.
 			if (keys[32])
 				this.transitionButtonColour = 'blue';
 			else if (mouseDown)
@@ -193,6 +200,9 @@ const init = () => {
 
 			ctx.fillStyle = this.transitionButtonColour;
 			ctx.fillRect(this.transitionButton.x, this.transitionButton.y, this.transitionButton.w, this.transitionButton.h);
+
+			ctx.fillStyle = 'white';
+			ctx.fillText("Click to begin!", this.transitionButton.x, this.transitionButton.y + this.transitionButton.h / 2);
 		}
 
 		onClick(x, y) {
@@ -210,12 +220,68 @@ const init = () => {
 	class MiddleScene extends Scene {
 		constructor() {
 			super();
+			this.transitionButtonColour = 'blue';
+			let transitionButtonWidth = 60;
+			let transitionButtonHeight = 40;
+			this.transitionButton = new Button(w / 2 - transitionButtonWidth / 2, h / 2 - transitionButtonHeight / 2, transitionButtonWidth, transitionButtonHeight, () => {
+				Scene.transition(SceneType.END);
+			});
+		}
+
+		onStart() {
+			alert("Middle scene starting.");
+		}
+
+		onFinish() {
+			alert("Middle scene finishing.");
+		}
+
+		onUpdate(deltaTime) {
+			ctx.fillRect(0, 0, w, h);
+
+			ctx.fillStyle = this.transitionButtonColour;
+			ctx.fillRect(this.transitionButton.x, this.transitionButton.y, this.transitionButton.w, this.transitionButton.h);
+
+			ctx.fillStyle = 'white';
+			ctx.fillText("Click to end.", 4 + this.transitionButton.x, this.transitionButton.y + this.transitionButton.h / 2);
+		}
+
+		onClick(x, y) {
+			this.transitionButton.onClick(new Point(x, y));
 		}
 	}
 
 	class EndScene extends Scene {
 		constructor() {
 			super();
+			this.transitionButtonColour = 'darkgrey';
+			let transitionButtonWidth = 60;
+			let transitionButtonHeight = 40;
+			this.transitionButton = new Button(w / 2 - transitionButtonWidth / 2, h / 2 - transitionButtonHeight / 2, transitionButtonWidth, transitionButtonHeight, () => {
+				Scene.transition(SceneType.BEGIN);
+			});
+		}
+
+		onStart() {
+			alert("End scene starting.");
+		}
+
+		onFinish() {
+			alert("End scene finishing.");
+		}
+
+		onUpdate(deltaTime) {
+			ctx.fillRect(0, 0, w, h);
+
+			ctx.fillStyle = this.transitionButtonColour;
+			ctx.fillRect(this.transitionButton.x, this.transitionButton.y, this.transitionButton.w, this.transitionButton.h);
+
+			ctx.fillStyle = 'white';
+			ctx.fillText("Restart.", 10 + this.transitionButton.x, this.transitionButton.y + this.transitionButton.h / 2);
+		}
+
+		onClick(x, y) {
+			this.transitionButton.onClick(new Point(x, y));
 		}
 	}
 
