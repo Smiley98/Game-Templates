@@ -7,8 +7,8 @@ const init = () => {
 	//Surface variables (global because we want all scenes to render to the same canvas).
 	const canvas = document.getElementById("canvas");
 	const ctx = canvas.getContext("2d");
-	const w = canvas.width;
-	const h = canvas.height;
+	const w = canvas.width * 1.0;
+	const h = canvas.height * 1.0;
 
 	//Input variables (global because there's only one keyboard and one mouse).
 	let keys = [];
@@ -29,6 +29,35 @@ const init = () => {
 			this.y = y;
 			this.w = w;
 			this.h = h;
+		}
+	}
+
+	class Button extends Box {
+		constructor(x, y, w, h, onClickHandler) {
+			super(x, y, w, h);
+			this.onClickHandler = onClickHandler;
+		}
+
+		onClick(point) {
+			if (pointCollision(point, this))
+				this.onClickHandler();
+		}
+	}
+
+	class RigidBody extends Box {
+		constructor(x, y, w, h, xVelocity, yVelocity) {
+			super(x, y, w, h);
+			this.xVel = xVelocity;
+			this.yVel = yVelocity;
+		}
+
+		move(dt) {
+			this.x += this.xVel * dt;
+			this.y += this.yVel * dt;
+			if (this.x <= 0.0 || this.x + this.w >= w)
+				this.xVel *= -1.0;
+			if (this.y <= 0.0 || this.y + this.h >= h)
+				this.yVel *= -1.0;
 		}
 	}
 
@@ -58,16 +87,11 @@ const init = () => {
 		return true;
 	}
 
-	class Button extends Box {
-		constructor(x, y, w, h, onClickHandler) {
-			super(x, y, w, h);
-			this.onClickHandler = onClickHandler;
-		}
-
-		onClick(point) {
-			if (pointCollision(point, this))
-				this.onClickHandler();
-		}
+	//Makes a centred button that accepts a click handler (callback function) as an argument.
+	function makeTransitionButton(onClick) {
+		const width = 60;
+		const height = 40;
+		return new Button(w / 2 - width / 2, h / 2 - height / 2, width, height, onClick);
 	}
 
 	const SceneType = {
@@ -164,10 +188,7 @@ const init = () => {
 			super();
 			this.transitionButtonColour = null;
 			this.transitionButtonOverlapping = false;
-
-			let transitionButtonWidth = 60;
-			let transitionButtonHeight = 40;
-			this.transitionButton = new Button(w / 2 - transitionButtonWidth / 2, h / 2 - transitionButtonHeight / 2, transitionButtonWidth, transitionButtonHeight, () => {
+			this.transitionButton = makeTransitionButton(() => {
 				Scene.transition(SceneType.MIDDLE);
 			});
 		}
@@ -221,11 +242,16 @@ const init = () => {
 		constructor() {
 			super();
 			this.transitionButtonColour = 'blue';
-			let transitionButtonWidth = 60;
-			let transitionButtonHeight = 40;
-			this.transitionButton = new Button(w / 2 - transitionButtonWidth / 2, h / 2 - transitionButtonHeight / 2, transitionButtonWidth, transitionButtonHeight, () => {
+			this.transitionButton = makeTransitionButton(() => {
 				Scene.transition(SceneType.END);
 			});
+
+			const colliderWidth = 69.0;
+			const colliderHeight = 42.0;
+			const colliderSpeed = 2.5;
+			const aspectRatio = (h * 1.0) / (w * 1.0);
+			this.collider1 = new RigidBody(0.0, 0.0, colliderWidth, colliderHeight, colliderSpeed / aspectRatio, colliderSpeed);
+			this.collider2 = new RigidBody(w -  colliderWidth, h - colliderHeight, colliderWidth, colliderHeight, -colliderSpeed  / aspectRatio, -colliderSpeed);
 		}
 
 		onStart() {
@@ -242,6 +268,15 @@ const init = () => {
 			ctx.fillStyle = this.transitionButtonColour;
 			ctx.fillRect(this.transitionButton.x, this.transitionButton.y, this.transitionButton.w, this.transitionButton.h);
 
+			this.collider1.move(deltaTime);
+			this.collider2.move(deltaTime);
+			if (boxCollision(this.collider1, this.collider2))
+				ctx.fillStyle = 'red';
+			else
+				ctx.fillStyle = 'lime';
+			ctx.fillRect(this.collider1.x, this.collider1.y, this.collider1.w, this.collider1.h);
+			ctx.fillRect(this.collider2.x, this.collider2.y, this.collider2.w, this.collider2.h);
+
 			ctx.fillStyle = 'white';
 			ctx.fillText("Click to end.", 4 + this.transitionButton.x, this.transitionButton.y + this.transitionButton.h / 2);
 		}
@@ -255,9 +290,7 @@ const init = () => {
 		constructor() {
 			super();
 			this.transitionButtonColour = 'darkgrey';
-			let transitionButtonWidth = 60;
-			let transitionButtonHeight = 40;
-			this.transitionButton = new Button(w / 2 - transitionButtonWidth / 2, h / 2 - transitionButtonHeight / 2, transitionButtonWidth, transitionButtonHeight, () => {
+			this.transitionButton = makeTransitionButton(() => {
 				Scene.transition(SceneType.BEGIN);
 			});
 		}
@@ -321,7 +354,7 @@ const init = () => {
 
 	//timestamp is assigned internally by requestAnimationFrame. It stores the time in milliseconds since the document loaded at which requestAnimationFrame was executed.
 	function gameLoop(timestamp) {
-		Scene.scene.onUpdate(previousDeltaTime);
+		Scene.scene.onUpdate(Math.min(millisecondsPerFrame, previousDeltaTime));
 		previousDeltaTime = performance.now() - timestamp;
 		setTimeout(requestAnimationFrame(gameLoop), millisecondsPerFrame - previousDeltaTime);
 	}
