@@ -1,12 +1,14 @@
 const init = () => {
 	//Animation variables (global because we want all scenes to run at the same frame rate).
-	const targetFrameRate = 60;
-	const millisecondsPerFrame = 1000 / targetFrameRate;
+	const targetFrameRate = 60.0;
+	const millisecondsPerFrame = 1000.0 / targetFrameRate;
 	let previousDeltaTime = millisecondsPerFrame;
 
 	//Surface variables (global because we want all scenes to render to the same canvas).
 	const canvas = document.getElementById("canvas");
 	const ctx = canvas.getContext("2d");
+
+	//Decimal multiplication to change datatypes from integer to double.
 	const w = canvas.width * 1.0;
 	const h = canvas.height * 1.0;
 
@@ -52,12 +54,21 @@ const init = () => {
 		}
 
 		move(dt) {
-			this.x += this.xVel * dt;
-			this.y += this.yVel * dt;
-			if (this.x <= 0.0 || this.x + this.w >= w)
+			let tx = this.xVel * dt;
+			let ty = this.yVel * dt;
+
+			if (tx + this.x <= 0.0 || tx + this.x + this.w >= w) {
 				this.xVel *= -1.0;
-			if (this.y <= 0.0 || this.y + this.h >= h)
+				tx = this.xVel * dt;
+			}
+			
+			if (ty + this.y <= 0.0 || ty + this.y + this.h >= h) {
 				this.yVel *= -1.0;
+				ty = this.yVel * dt;
+			}
+				
+			this.x += tx;
+			this.y += ty;
 		}
 	}
 
