@@ -1,12 +1,13 @@
-import sys, pygame
-pygame.init()
+import sys, pygame as pg
+pg.init()
 
-canvas = pygame.display.set_mode([640, 480])
-ctx = pygame.display.get_surface()
+canvas = pg.display.set_mode([640, 480])
+ctx = pg.display.get_surface()
 
 while 1:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT: sys.exit()
+    for event in pg.event.get():
+        if event.type == pg.QUIT: sys.exit()
 
-    canvas.fill(pygame.Color(0, 0, 0))
-    pygame.display.flip()
+    canvas.fill(pg.Color(0, 0, 0))
+    pg.draw.rect(ctx, pg.Color(255, 0, 0), pg.Rect(0, 0, 60, 40))
+    pg.display.flip()
