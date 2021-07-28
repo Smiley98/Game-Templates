@@ -170,14 +170,14 @@ const init = () => {
 				console.log("Default mouse move response: " + x + ", " + y);
 		}
 
-		onMouseDown(x, y) {
+		onMouseDown() {
 			if (this.defaultHandlerLogging)
-				console.log("Default mouse down response: " + x + ", " + y);
+				console.log("Default mouse down response: mouse down!");
 		}
 
-		onMouseUp(x, y) {
+		onMouseUp() {
 			if (this.defaultHandlerLogging)
-				console.log("Default mouse up response: " + x + ", " + y);
+				console.log("Default mouse up response: mouse up!");
 		}
 
 		onKeyDown(key) {
@@ -334,33 +334,33 @@ const init = () => {
 
 	canvas.addEventListener('click', e => {
 		Scene.scene.onClick(e.offsetX, e.offsetY);
-	}, false);
+	}, true);
 
 	canvas.addEventListener('mousemove', e => {
 		mouse.x = e.offsetX;
 		mouse.y = e.offsetY;
 		Scene.scene.onMouseMove(e.offsetX, e.offsetY);
-	});
+	}, true);
 
-	canvas.addEventListener('mousedown', e => {
+	window.addEventListener('mousedown', e => {
 		mouseDown = true;
-		Scene.scene.onMouseDown(e.offsetX, e.offsetY);
-	});
+		Scene.scene.onMouseDown();
+	}, true);
 
-	canvas.addEventListener('mouseup', e => {
+	window.addEventListener('mouseup', e => {
 		mouseDown = false;
-		Scene.scene.onMouseUp(e.offsetX, e.offsetY);
-	});
+		Scene.scene.onMouseUp();
+	}, true);
 	
 	window.addEventListener('keydown', e => {
 		keys[e.keyCode] = true;
 		Scene.scene.onKeyDown(e.keyCode);
-	}, false);
+	}, true);
 	
 	window.addEventListener('keyup', e => {
 		keys[e.keyCode] = false;
 		Scene.scene.onKeyUp(e.keyCode);
-	}, false);
+	}, true);
 
 	//timestamp is assigned internally by requestAnimationFrame. It stores the time in milliseconds since the document loaded at which requestAnimationFrame was executed.
 	function gameLoop(timestamp) {
