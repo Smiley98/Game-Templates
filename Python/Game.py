@@ -40,32 +40,42 @@ class EndScene(Scene):
     def onFinish(self):
         print("End finish")
 
-class Point:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
+def drawText(text, x, y, colour, font, surface):
+    textRender = font.render(text, True, colour)
+    textRect = textRender.get_rect()
+    textRect.center = (x, y)
+    surface.blit(textRender, textRect)
 
-#The pygame.Rect class is aids. It uses like 10x more memory than it needs to hence the creation of this Box class ;)
-class Box:
-    def __init__(self, x, y, w, h):
-        self.x = x
-        self.y = y
-        self.w = w
-        self.h = h
-    
-    def rect() -> pg.Rect:
-        return pg.Rect(x, y, w, h)
+#pygame has a Rect class that uses way too much memory, but it handles collisions for me.
+#Writing this is already painful enough so I've decided to use its silly Rect class...
+class Button(pg.Rect):
+    def __init__(self, x, y, w, h, button_colour, onClickHandler):
+        super().__init__(x, y, w, h)
+        self.button_colour = button_colour
+        self.onClickHandler = onClickHandler
 
+    def draw(self, surface):
+        pg.draw.rect(surface, self.button_colour, pg.Rect(self.x, self.y, self.w, self.h))
 
-#class Button:
-#    def __init__(self, x, y, w, h, onClickHandler):
+    def onClick(self, x, y):
+        if (super().collidepoint(x, y)):
+            self.onClickHandler()
+
+class TextButton(Button):
+    def __init__(self, x, y, w, h,  button_colour, text_colour, font, onClickHandler):
+        super().__init__(x, y, w, h, button_colour, onClickHandler)
+        self.text_colour = text_colour
+        self.font = font
+
+    def draw(self, text, surface):
+        super().draw(surface)
+        drawText(text, self.x + self.w / 2, self.y + self.h / 2, self.text_colour, self.font, surface)
 
 pg.init()
 
-canvas = pg.display.set_mode([640, 480])
-ctx = pg.display.get_surface()
-font = pg.font.Font('freesansbold.ttf', 32)
-mouse = Point(0, 0)
+screen = pg.display.set_mode([640, 480])
+surface = pg.display.get_surface()
+mouse = (0, 0)
 mouseDown = False
 
 black = pg.Color(0, 0, 0)
@@ -83,20 +93,25 @@ a.onStart()
 b.onStart()
 c.onStart()
 
-def text(text, x, y, fg_colour, bg_colour):
-    textRender = font.render(text, True, fg_colour, bg_colour)
-    textRect = textRender.get_rect()
-    textRect.center = (x, y)
-    ctx.blit(textRender, textRect)
+font10 = pg.font.Font('freesansbold.ttf', 10)
+font20 = pg.font.Font('freesansbold.ttf', 20)
+font30 = pg.font.Font('freesansbold.ttf', 30)
+
+button = Button(0, 0, 60, 40, red, lambda : print("Button!"))
+textButton = TextButton(0, 0, 60, 40, red, white, font10, lambda : print("Text button!"))
 
 while 1:
     for event in pg.event.get():
         if event.type == pg.QUIT: sys.exit()
     
     #I swear there's a way to convert from tuple to Point in one line but I'm not good enough at Python to know how.
-    mouse = Point(pg.mouse.get_pos()[0], pg.mouse.get_pos()[1])
+    mouse = pg.mouse.get_pos()
 
-    canvas.fill(pg.Color(0, 0, 0))
-    text("Click to begin", 320, 240, white, black)
-    pg.draw.rect(ctx, pg.Color(255, 0, 0), pg.Rect(320, 240, 60, 40))
+    screen.fill(pg.Color(0, 0, 0))
+
+    textButton.draw("Memes", surface)
+
+    pg.draw.rect(surface, red, pg.Rect(320, 240, 60, 40))
+    drawText("Memes", 350, 260, white, font10, surface)
+    
     pg.display.flip()
