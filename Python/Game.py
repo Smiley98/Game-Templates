@@ -42,8 +42,8 @@ font20 = pg.font.Font('freesansbold.ttf', 20)
 font30 = pg.font.Font('freesansbold.ttf', 30)
 
 class Scene:
-    def __init__(self):
-        pass
+    def __init__(self, bounds):
+        self.bounds = bounds
 
     def onStart(self):
         print("Default start")
@@ -58,9 +58,9 @@ class Scene:
         print("Default click")
 
 class BeginScene(Scene):
-    def __init__(self):
-        super().__init__()
-        self.button = TextButton(0, 0, 60, 40, red, white, font10, lambda : print("Begin button!"))
+    def __init__(self, bounds):
+        super().__init__(bounds)
+        self.button = TextButton(bounds.centerx, bounds.centery, 60, 40, red, white, font10, lambda : print("Begin button!"))
     
     def onStart(self):
         print("Begin start")
@@ -75,8 +75,9 @@ class BeginScene(Scene):
         self.button.onClick(x, y)
 
 class MiddleScene(Scene):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, bounds):
+        super().__init__(bounds)
+        self.button = TextButton(bounds.centerx, bounds.centery, 60, 40, red, white, font10, lambda : print("Middle button!"))
     
     def onStart(self):
         print("Middle start")
@@ -85,8 +86,9 @@ class MiddleScene(Scene):
         print("Middle finish")
 
 class EndScene(Scene):
-    def __init__(self):
-        super().__init__(surface)
+    def __init__(self, bounds):
+        super().__init__(bounds)
+        self.button = TextButton(bounds.centerx, bounds.centery, 60, 40, red, white, font10, lambda : print("End button!"))
 
     def onStart(self):
         print("End start")
@@ -98,8 +100,9 @@ screen = pg.display.set_mode([640, 480])
 surface = pg.display.get_surface()
 mouse = (0, 0)
 mouseDown = False
+lit = surface.get_rect()
 
-scene = BeginScene()
+scene = BeginScene(screen.get_rect())
 
 while 1:
     mouse = pg.mouse.get_pos()
