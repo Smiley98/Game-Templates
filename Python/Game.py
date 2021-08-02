@@ -57,7 +57,7 @@ class Scene:
     def onFinish(self):
         print("Default finish")
 
-    def onUpdate(self, surface):
+    def onUpdate(self, surface, deltaTime):
         print("Default update")
 
     def onClick(self, x, y):
@@ -70,14 +70,18 @@ class Scene:
         if not clazz.scene == None:
             clazz.scene.onFinish()
 
+        #If Python was a real language this would be a switch statement.
         if sceneType == SceneType.BEGIN:
             clazz.scene = BeginScene(bounds)
         elif sceneType == SceneType.MIDDLE:
             clazz.scene = MiddleScene(bounds)
         elif sceneType == SceneType.END:
             clazz.scene = EndScene(bounds)
+        else:
+            clazz.scene = None
 
-        clazz.scene.onStart()
+        if not clazz.scene == None:
+            clazz.scene.onStart()
 
 class BeginScene(Scene):
     def __init__(self, bounds):
@@ -92,7 +96,7 @@ class BeginScene(Scene):
     def onFinish(self):
         print("Begin finish")
 
-    def onUpdate(self, surface):
+    def onUpdate(self, surface, deltaTime):
         self.button.draw("Begin", surface)
 
     def onClick(self, x, y):
@@ -111,8 +115,9 @@ class MiddleScene(Scene):
     def onFinish(self):
         print("Middle finish")
 
-    def onUpdate(self, surface):
+    def onUpdate(self, surface, deltaTime):
         self.button.draw("End", surface)
+        print(1000.0 / deltaTime)
 
     def onClick(self, x, y):
         self.button.onClick(x, y)
@@ -130,7 +135,7 @@ class EndScene(Scene):
     def onFinish(self):
         print("End finish")
 
-    def onUpdate(self, surface):
+    def onUpdate(self, surface, deltaTime):
         self.button.draw("Restart", surface)
 
     def onClick(self, x, y):
@@ -141,6 +146,10 @@ surface = pg.display.get_surface()
 mouse = (0, 0)
 mouseDown = False
 lit = surface.get_rect()
+
+clock = pg.time.Clock()
+frameRate = 60
+deltaTime = 1000.0 / 60.0
 
 Scene.change(SceneType.BEGIN, screen.get_rect())
 
@@ -155,9 +164,7 @@ while 1:
 
     #Do not put any rendering code above this!
     screen.fill(pg.Color(0, 0, 0))
-    Scene.scene.onUpdate(surface)
+    Scene.scene.onUpdate(surface, deltaTime)
 
-    #pg.draw.rect(surface, red, pg.Rect(320, 240, 60, 40))
-    #drawText("Memes", 350, 260, white, font10, surface)
-    
+    deltaTime = clock.tick(frameRate)
     pg.display.flip()
