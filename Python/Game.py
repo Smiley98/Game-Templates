@@ -30,6 +30,38 @@ class TextButton(Button):
         super().draw(surface)
         drawText(text, self.x + self.w / 2, self.y + self.h / 2, self.text_colour, self.font, surface)
 
+#Cannot derive from pg.Rect because that uses integers rather than decimal numbers.
+class RigidBody():
+    def __init__(self, x, y, w, h, vx, vy, intersect_colour, non_intersect_colour):
+        self.x = x
+        self.y = y
+        self.w = w
+        self.h = h
+        self.vx = vx
+        self.vy = vy
+        self.intersect_colour = intersect_colour
+        self.non_intersect_colour = non_intersect_colour
+
+    def update(self, surface, dt, colliding):
+        tx = self.vx * dt
+        ty = self.vy * dt
+        bounds = surface.get_rect()
+
+        if self.x + self.w + tx >= bounds.right or self.x + tx <= bounds.left:
+            self.vx *= -1.0
+            tx = self.vx * dt * 3.0
+
+        if self.y + self.h + ty >= bounds.bottom or self.y + ty <= bounds.top:
+            self.vy *= -1.0
+            ty = self.vy * dt * 3.0
+
+        self.x += tx
+        self.y += ty
+        pg.draw.rect(surface, self.intersect_colour if colliding else self.non_intersect_colour, self.toRect())
+    
+    def toRect(self):
+        return pg.Rect(self.x, self.y, self.w, self.h)
+
 #Creating globals here because the scene classes need them.
 black = pg.Color(0, 0, 0)
 red = pg.Color(255, 0, 0)
@@ -108,6 +140,8 @@ class MiddleScene(Scene):
         self.button = TextButton(bounds.centerx - 30, bounds.centery - 20, 60, 40, green, white, font10, lambda: (
             Scene.change(SceneType.END, bounds)
         ))
+        self.collider1 = RigidBody(1.0, 1.0, 60.0, 40.0, 1.0, 0.75, red, green)
+        self.collider2 = RigidBody(float(bounds.right) - 61.0, float(bounds.bottom) - 41.0, 60.0, 40.0, -1.0, -0.75, red, green)
 
     def onStart(self):
         print("Middle start")
@@ -117,7 +151,8 @@ class MiddleScene(Scene):
 
     def onUpdate(self, surface, deltaTime):
         self.button.draw("End", surface)
-        print(1000.0 / deltaTime)
+        self.collider1.update(surface, deltaTime, self.collider1.toRect().colliderect(self.collider2.toRect()))
+        self.collider2.update(surface, deltaTime, self.collider2.toRect().colliderect(self.collider1.toRect()))
 
     def onClick(self, x, y):
         self.button.onClick(x, y)
@@ -148,12 +183,14 @@ mouseDown = False
 lit = surface.get_rect()
 
 clock = pg.time.Clock()
-frameRate = 60
-deltaTime = 1000.0 / 60.0
+frameRate = 60.0
+millisecondsPerFrame = 1000.0 / frameRate
+deltaTime = millisecondsPerFrame
 
 Scene.change(SceneType.BEGIN, screen.get_rect())
 
 while 1:
+    #Poll events and forward them to the current scene.
     mouse = pg.mouse.get_pos()
     for event in pg.event.get():
         if event.type == pg.QUIT:
@@ -166,5 +203,6 @@ while 1:
     screen.fill(pg.Color(0, 0, 0))
     Scene.scene.onUpdate(surface, deltaTime)
 
-    deltaTime = clock.tick(frameRate)
+    #Limit framerate and swap frame buffers.
+    deltaTime = min(clock.tick(frameRate), millisecondsPerFrame)
     pg.display.flip()
