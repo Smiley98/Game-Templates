@@ -1,4 +1,5 @@
 import sys, pygame as pg
+from enum import Enum
 
 def drawText(text, x, y, colour, font, surface):
     textRender = font.render(text, True, colour)
@@ -41,6 +42,11 @@ font10 = pg.font.Font('freesansbold.ttf', 10)
 font20 = pg.font.Font('freesansbold.ttf', 20)
 font30 = pg.font.Font('freesansbold.ttf', 30)
 
+class SceneType(Enum):
+    BEGIN = 0
+    MIDDLE = 1
+    END = 2
+
 class Scene:
     def __init__(self, bounds):
         self.bounds = bounds
@@ -56,6 +62,22 @@ class Scene:
 
     def onClick(self, x, y):
         print("Default click")
+
+    scene = None
+
+    @classmethod
+    def change(clazz, sceneType, bounds):
+        if not clazz.scene == None:
+            clazz.scene.onFinish()
+
+        if sceneType == SceneType.BEGIN:
+            clazz.scene = BeginScene(bounds)
+        elif sceneType == SceneType.MIDDLE:
+            clazz.scene = MiddleScene(bounds)
+        elif sceneType == SceneType.END:
+            clazz.scene = EndScene(bounds)
+
+        clazz.scene.onStart()
 
 class BeginScene(Scene):
     def __init__(self, bounds):
@@ -102,7 +124,7 @@ mouse = (0, 0)
 mouseDown = False
 lit = surface.get_rect()
 
-scene = BeginScene(screen.get_rect())
+Scene.change(SceneType.BEGIN, screen.get_rect())
 
 while 1:
     mouse = pg.mouse.get_pos()
@@ -111,11 +133,11 @@ while 1:
             sys.exit()
 
         elif event.type == pg.MOUSEBUTTONUP:
-            scene.onClick(mouse[0], mouse[1])
+            Scene.scene.onClick(mouse[0], mouse[1])
 
     #Do not put any rendering code above this!
     screen.fill(pg.Color(0, 0, 0))
-    scene.onUpdate(surface)
+    Scene.scene.onUpdate(surface)
 
     pg.draw.rect(surface, red, pg.Rect(320, 240, 60, 40))
     drawText("Memes", 350, 260, white, font10, surface)
