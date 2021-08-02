@@ -82,7 +82,9 @@ class Scene:
 class BeginScene(Scene):
     def __init__(self, bounds):
         super().__init__(bounds)
-        self.button = TextButton(bounds.centerx, bounds.centery, 60, 40, red, white, font10, lambda : print("Begin button!"))
+        self.button = TextButton(bounds.centerx - 30, bounds.centery - 20, 60, 40, red, white, font10, lambda: (
+            Scene.change(SceneType.MIDDLE, bounds)
+        ))
     
     def onStart(self):
         print("Begin start")
@@ -91,7 +93,7 @@ class BeginScene(Scene):
         print("Begin finish")
 
     def onUpdate(self, surface):
-        self.button.draw("Memes", surface)
+        self.button.draw("Begin", surface)
 
     def onClick(self, x, y):
         self.button.onClick(x, y)
@@ -99,24 +101,40 @@ class BeginScene(Scene):
 class MiddleScene(Scene):
     def __init__(self, bounds):
         super().__init__(bounds)
-        self.button = TextButton(bounds.centerx, bounds.centery, 60, 40, red, white, font10, lambda : print("Middle button!"))
-    
+        self.button = TextButton(bounds.centerx - 30, bounds.centery - 20, 60, 40, green, white, font10, lambda: (
+            Scene.change(SceneType.END, bounds)
+        ))
+
     def onStart(self):
         print("Middle start")
     
     def onFinish(self):
         print("Middle finish")
 
+    def onUpdate(self, surface):
+        self.button.draw("End", surface)
+
+    def onClick(self, x, y):
+        self.button.onClick(x, y)
+
 class EndScene(Scene):
     def __init__(self, bounds):
         super().__init__(bounds)
-        self.button = TextButton(bounds.centerx, bounds.centery, 60, 40, red, white, font10, lambda : print("End button!"))
+        self.button = TextButton(bounds.centerx - 30, bounds.centery - 20, 60, 40, blue, white, font10, lambda: (
+            Scene.change(SceneType.BEGIN, bounds)
+        ))
 
     def onStart(self):
         print("End start")
     
     def onFinish(self):
         print("End finish")
+
+    def onUpdate(self, surface):
+        self.button.draw("Restart", surface)
+
+    def onClick(self, x, y):
+        self.button.onClick(x, y)
 
 screen = pg.display.set_mode([640, 480])
 surface = pg.display.get_surface()
@@ -139,7 +157,7 @@ while 1:
     screen.fill(pg.Color(0, 0, 0))
     Scene.scene.onUpdate(surface)
 
-    pg.draw.rect(surface, red, pg.Rect(320, 240, 60, 40))
-    drawText("Memes", 350, 260, white, font10, surface)
+    #pg.draw.rect(surface, red, pg.Rect(320, 240, 60, 40))
+    #drawText("Memes", 350, 260, white, font10, surface)
     
     pg.display.flip()
