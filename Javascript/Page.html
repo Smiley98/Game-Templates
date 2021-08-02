@@ -1,0 +1,33 @@
+<html>
+	<head>
+		<title>Game Template</title>
+		<style>
+			body {
+				margin: auto;
+				display: block;
+				position: fixed;
+				overflow: hidden;
+				background-color:black;
+			}
+
+			canvas {
+				margin: auto;
+				display: block;
+				position: fixed;
+				padding: 0px;
+				top: 0px;
+				left: 0px;
+
+/*Comment the following two lines if you would like the canvas to be in the top left corner instead of centre.*/
+				bottom: 0px;
+				right: 0px;
+			}
+		</style>
+	</head>
+
+	<body onload="init();">
+<!--640x480 is a reasonable resolution. Anything larger will most likely lag extremely hard given this is browser dev.-->
+		<canvas id='canvas' width='640' height='480'></canvas>
+		<script src="Game.js"></script>
+	</body>
+</html>
