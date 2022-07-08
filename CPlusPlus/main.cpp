@@ -1,7 +1,10 @@
+#define _CRT_SECURE_NO_WARNINGS
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <iostream>
 
 #include <cstdlib>
+#include <cstdio>
 #include <cwchar>
 #include <cmath>
 
@@ -261,11 +264,11 @@ private:
     }
 
     // The windows procedure.
-    static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+    static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
         LRESULT result = 0;
 
-        if (message == WM_CREATE)
+        if (msg == WM_CREATE)
         {
             LPCREATESTRUCT pcs = (LPCREATESTRUCT)lParam;
             App* pApp = (App*)pcs->lpCreateParams;
@@ -290,7 +293,7 @@ private:
 
             if (pDemoApp)
             {
-                switch (message)
+                switch (msg)
                 {
                 case WM_SIZE:
                 {
@@ -319,6 +322,18 @@ private:
                 wasHandled = true;
                 break;
 
+                case WM_KEYDOWN:
+                {
+                    printf_s("WM_KEYDOWN: 0x%x\n", wParam);
+                }
+                break;
+
+                case WM_KEYUP:
+                {
+                    printf_s("WM_KEYUP: 0x%x\n", wParam);
+                }
+                break;
+
                 case WM_DESTROY:
                 {
                     PostQuitMessage(0);
@@ -331,7 +346,7 @@ private:
 
             if (!wasHandled)
             {
-                result = DefWindowProc(hWnd, message, wParam, lParam);
+                result = DefWindowProc(hWnd, msg, wParam, lParam);
             }
         }
 
@@ -345,6 +360,102 @@ private:
     ID2D1SolidColorBrush* m_pCornflowerBlueBrush;
 };
 
+bool RedirectConsoleIO()
+{
+    bool result = true;
+    FILE* fp;
+
+    // Redirect STDIN if the console has an input handle
+    if (GetStdHandle(STD_INPUT_HANDLE) != INVALID_HANDLE_VALUE)
+        if (freopen_s(&fp, "CONIN$", "r", stdin) != 0)
+            result = false;
+        else
+            setvbuf(stdin, NULL, _IONBF, 0);
+
+    // Redirect STDOUT if the console has an output handle
+    if (GetStdHandle(STD_OUTPUT_HANDLE) != INVALID_HANDLE_VALUE)
+        if (freopen_s(&fp, "CONOUT$", "w", stdout) != 0)
+            result = false;
+        else
+            setvbuf(stdout, NULL, _IONBF, 0);
+
+    // Redirect STDERR if the console has an error handle
+    if (GetStdHandle(STD_ERROR_HANDLE) != INVALID_HANDLE_VALUE)
+        if (freopen_s(&fp, "CONOUT$", "w", stderr) != 0)
+            result = false;
+        else
+            setvbuf(stderr, NULL, _IONBF, 0);
+
+    // Make C++ standard streams point to console as well.
+    std::ios::sync_with_stdio(true);
+
+    // Clear the error state for each of the C++ standard streams.
+    std::wcout.clear();
+    std::cout.clear();
+    std::wcerr.clear();
+    std::cerr.clear();
+    std::wcin.clear();
+    std::cin.clear();
+
+    return result;
+}
+
+bool ReleaseConsole()
+{
+    bool result = true;
+    FILE* fp;
+
+    // Redirect STDIN to NUL
+    if (freopen_s(&fp, "NUL:", "r", stdin) != 0)
+        result = false;
+    else
+        setvbuf(stdin, NULL, _IONBF, 0);
+
+    // Redirect STDOUT to NULL
+    if (freopen_s(&fp, "NUL:", "w", stdout) != 0)
+        result = false;
+    else
+        setvbuf(stdout, NULL, _IONBF, 0);
+
+    // Redirect STDERR to NULL
+    if (freopen_s(&fp, "NUL:", "w", stderr) != 0)
+        result = false;
+    else
+        setvbuf(stderr, NULL, _IONBF, 0);
+
+    // Detach from console
+    if (!FreeConsole())
+        result = false;
+
+    return result;
+}
+
+void AdjustConsoleBuffer(int16_t minLength)
+{
+    // Set the screen buffer to be big enough to scroll some text
+    CONSOLE_SCREEN_BUFFER_INFO conInfo;
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &conInfo);
+    conInfo.dwSize.Y = min(conInfo.dwSize.Y, minLength);
+    SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), conInfo.dwSize);
+}
+
+bool CreateConsole(int16_t minLength, bool bAttachToParent = false)
+{
+    bool result = false;
+
+    // Release any current console and redirect IO to NUL
+    ReleaseConsole();
+
+    // Attempt to create new console
+    if (bAttachToParent ? AttachConsole(ATTACH_PARENT_PROCESS) : AllocConsole())
+    {
+        AdjustConsoleBuffer(minLength);
+        result = RedirectConsoleIO();
+    }
+
+    return result;
+}
+
 int WINAPI WinMain(
     HINSTANCE /* hInstance */,
     HINSTANCE /* hPrevInstance */,
@@ -352,6 +463,8 @@ int WINAPI WinMain(
     int /* nCmdShow */)
 {
     HeapSetInformation(NULL, HeapEnableTerminationOnCorruption, NULL, 0);
+    CreateConsole(1024);
+    printf("Lit!\n");
 
     if (SUCCEEDED(CoInitialize(NULL)))
     {
@@ -365,5 +478,6 @@ int WINAPI WinMain(
         CoUninitialize();
     }
 
+    ReleaseConsole();
     return 0;
 }
