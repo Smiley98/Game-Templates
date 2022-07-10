@@ -2,6 +2,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <iostream>
+#include <chrono>
 
 #include <cstdlib>
 #include <cstdio>
@@ -12,6 +13,8 @@
 #include <d2d1helper.h>
 #include <dwrite.h>
 #include <wincodec.h>
+
+#include "Scene.h"
 
 template<class Interface>
 inline void SafeRelease(
@@ -36,6 +39,8 @@ inline void SafeRelease(
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 #define HINST_THISCOMPONENT ((HINSTANCE)&__ImageBase)
 #endif
+
+float gTime = 0.0f;
 
 class App
 {
@@ -114,13 +119,28 @@ public:
     }
 
     // Process and dispatch messages
-    void RunMessageLoop()
+    void GameLoop()
     {
-        MSG msg;
-        while (GetMessage(&msg, NULL, 0, 0))
+        while (!m_bQuit)
         {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
+            static float delta = 0.0f;
+            std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+
+            MSG msg;
+            while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+            {
+                TranslateMessage(&msg);
+                DispatchMessage(&msg);
+
+                if (msg.message == WM_QUIT)
+                {
+                    m_bQuit = true;
+                }
+            }
+
+            Scene::Update(delta);
+            delta = std::chrono::duration<float>(std::chrono::high_resolution_clock::now() - start).count();
+            gTime += delta;
         }
     }
 
@@ -324,13 +344,13 @@ private:
 
                 case WM_KEYDOWN:
                 {
-                    printf_s("WM_KEYDOWN: 0x%x\n", wParam);
+                    printf("WM_KEYDOWN: 0x%x\n", wParam);
                 }
                 break;
 
                 case WM_KEYUP:
                 {
-                    printf_s("WM_KEYUP: 0x%x\n", wParam);
+                    printf("WM_KEYUP: 0x%x\n", wParam);
                 }
                 break;
 
@@ -358,6 +378,7 @@ private:
     ID2D1HwndRenderTarget* m_pRenderTarget;
     ID2D1SolidColorBrush* m_pLightSlateGrayBrush;
     ID2D1SolidColorBrush* m_pCornflowerBlueBrush;
+    bool m_bQuit = false;
 };
 
 bool RedirectConsoleIO()
@@ -464,16 +485,15 @@ int WINAPI WinMain(
 {
     HeapSetInformation(NULL, HeapEnableTerminationOnCorruption, NULL, 0);
     CreateConsole(1024);
-    printf("Lit!\n");
 
     if (SUCCEEDED(CoInitialize(NULL)))
     {
+        App app;
+        if (SUCCEEDED(app.Initialize()))
         {
-            App app;
-            if (SUCCEEDED(app.Initialize()))
-            {
-                app.RunMessageLoop();
-            }
+            Scene::Initialize();
+            app.GameLoop();
+            Scene::Shutdown();
         }
         CoUninitialize();
     }
