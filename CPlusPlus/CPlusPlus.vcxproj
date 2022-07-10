@@ -79,12 +79,14 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MiddleScene.cpp" />
     <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="TestScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BeginScene.h" />
     <ClInclude Include="EndScene.h" />
     <ClInclude Include="MiddleScene.h" />
     <ClInclude Include="Scene.h" />
+    <ClInclude Include="TestScene.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

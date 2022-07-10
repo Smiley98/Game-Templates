@@ -9,36 +9,7 @@
 #include <cwchar>
 #include <cmath>
 
-#include <d2d1.h>
-#include <d2d1helper.h>
-#include <dwrite.h>
-#include <wincodec.h>
-
 #include "Scene.h"
-
-template<class Interface>
-inline void SafeRelease(
-    Interface** ppInterfaceToRelease)
-{
-    if (*ppInterfaceToRelease != NULL)
-    {
-        (*ppInterfaceToRelease)->Release();
-        (*ppInterfaceToRelease) = NULL;
-    }
-}
-
-#ifndef Assert
-#if defined( DEBUG ) || defined( _DEBUG )
-#define Assert(b) do {if (!(b)) {OutputDebugStringA("Assert: " #b "\n");}} while(0)
-#else
-#define Assert(b)
-#endif //DEBUG || _DEBUG
-#endif
-
-#ifndef HINST_THISCOMPONENT
-EXTERN_C IMAGE_DOS_HEADER __ImageBase;
-#define HINST_THISCOMPONENT ((HINSTANCE)&__ImageBase)
-#endif
 
 float gTime = 0.0f;
 
@@ -48,24 +19,22 @@ public:
     App() :
         m_hwnd(NULL),
         m_pDirect2dFactory(NULL),
-        m_pRenderTarget(NULL),
-        m_pLightSlateGrayBrush(NULL),
-        m_pCornflowerBlueBrush(NULL)
+        m_pRenderTarget(NULL)
     {}
 
     ~App()
     {
+        Scene::Shutdown();
         SafeRelease(&m_pDirect2dFactory);
         SafeRelease(&m_pRenderTarget);
-        SafeRelease(&m_pLightSlateGrayBrush);
-        SafeRelease(&m_pCornflowerBlueBrush);
     }
 
     // Register the window class and call methods for instantiating drawing resources
     HRESULT Initialize()
     {
-        HRESULT hr = CreateDeviceIndependentResources();
+        Scene::Initialize();
 
+        HRESULT hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_pDirect2dFactory);
         if (SUCCEEDED(hr))
         {
             // Register the window class.
@@ -145,12 +114,6 @@ public:
     }
 
 private:
-    // Initialize device-independent resources.
-    HRESULT CreateDeviceIndependentResources()
-    {
-        return D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_pDirect2dFactory);
-    }
-
     // Initialize device-dependent resources.
     HRESULT CreateDeviceResources()
     {
@@ -173,22 +136,7 @@ private:
                 &m_pRenderTarget
             );
 
-            if (SUCCEEDED(hr))
-            {
-                // Create a gray brush.
-                hr = m_pRenderTarget->CreateSolidColorBrush(
-                    D2D1::ColorF(D2D1::ColorF::LightSlateGray),
-                    &m_pLightSlateGrayBrush
-                );
-            }
-            if (SUCCEEDED(hr))
-            {
-                // Create a blue brush.
-                hr = m_pRenderTarget->CreateSolidColorBrush(
-                    D2D1::ColorF(D2D1::ColorF::CornflowerBlue),
-                    &m_pCornflowerBlueBrush
-                );
-            }
+            hr = SUCCEEDED(hr) ? Scene::CreateDevice(m_pRenderTarget) : hr;
         }
 
         return hr;
@@ -197,9 +145,8 @@ private:
     // Release device-dependent resource.
     void DiscardDeviceResources()
     {
+        Scene::DiscardDevice();
         SafeRelease(&m_pRenderTarget);
-        SafeRelease(&m_pLightSlateGrayBrush);
-        SafeRelease(&m_pCornflowerBlueBrush);
     }
 
     // Draw content.
@@ -215,52 +162,7 @@ private:
             m_pRenderTarget->SetTransform(D2D1::Matrix3x2F::Identity());
             m_pRenderTarget->Clear(D2D1::ColorF(D2D1::ColorF::White));
 
-            D2D1_SIZE_F rtSize = m_pRenderTarget->GetSize();
-
-            // Draw a grid background.
-            int width = static_cast<int>(rtSize.width);
-            int height = static_cast<int>(rtSize.height);
-
-            for (int x = 0; x < width; x += 10)
-            {
-                m_pRenderTarget->DrawLine(
-                    D2D1::Point2F(static_cast<FLOAT>(x), 0.0f),
-                    D2D1::Point2F(static_cast<FLOAT>(x), rtSize.height),
-                    m_pLightSlateGrayBrush,
-                    0.5f
-                );
-            }
-
-            for (int y = 0; y < height; y += 10)
-            {
-                m_pRenderTarget->DrawLine(
-                    D2D1::Point2F(0.0f, static_cast<FLOAT>(y)),
-                    D2D1::Point2F(rtSize.width, static_cast<FLOAT>(y)),
-                    m_pLightSlateGrayBrush,
-                    0.5f
-                );
-            }
-
-            // Draw two rectangles.
-            D2D1_RECT_F rectangle1 = D2D1::RectF(
-                rtSize.width / 2 - 50.0f,
-                rtSize.height / 2 - 50.0f,
-                rtSize.width / 2 + 50.0f,
-                rtSize.height / 2 + 50.0f
-            );
-
-            D2D1_RECT_F rectangle2 = D2D1::RectF(
-                rtSize.width / 2 - 100.0f,
-                rtSize.height / 2 - 100.0f,
-                rtSize.width / 2 + 100.0f,
-                rtSize.height / 2 + 100.0f
-            );
-
-            // Draw a filled rectangle.
-            m_pRenderTarget->FillRectangle(&rectangle1, m_pLightSlateGrayBrush);
-
-            // Draw the outline of a rectangle.
-            m_pRenderTarget->DrawRectangle(&rectangle2, m_pCornflowerBlueBrush);
+            Scene::Render(m_pRenderTarget);
 
             hr = m_pRenderTarget->EndDraw();
         }
@@ -376,8 +278,6 @@ private:
     HWND m_hwnd;
     ID2D1Factory* m_pDirect2dFactory;
     ID2D1HwndRenderTarget* m_pRenderTarget;
-    ID2D1SolidColorBrush* m_pLightSlateGrayBrush;
-    ID2D1SolidColorBrush* m_pCornflowerBlueBrush;
     bool m_bQuit = false;
 };
 
@@ -491,9 +391,7 @@ int WINAPI WinMain(
         App app;
         if (SUCCEEDED(app.Initialize()))
         {
-            Scene::Initialize();
             app.GameLoop();
-            Scene::Shutdown();
         }
         CoUninitialize();
     }

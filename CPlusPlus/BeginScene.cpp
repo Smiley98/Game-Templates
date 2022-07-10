@@ -1,6 +1,5 @@
 #include "BeginScene.h"
-#include <cstdio>
-extern float gTime;
+
 
 void BeginScene::OnStart()
 {
@@ -10,11 +9,21 @@ void BeginScene::OnFinish()
 {
 }
 
-void BeginScene::OnUpdate(float deltaTime)
+HRESULT BeginScene::OnCreateDevice(ID2D1HwndRenderTarget* rt)
 {
-	printf("Frame time: %f. Total time: %f.\n", deltaTime, gTime);
+	HRESULT hr = S_OK;
+
+	return hr;
 }
 
-void BeginScene::OnRender()
+void BeginScene::OnDiscardDevice()
+{
+}
+
+void BeginScene::OnUpdate(float deltaTime)
+{
+}
+
+void BeginScene::OnRender(ID2D1HwndRenderTarget* rt)
 {
 }

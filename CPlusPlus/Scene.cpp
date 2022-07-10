@@ -1,4 +1,5 @@
 #include "Scene.h"
+#include "TestScene.h"
 #include "BeginScene.h"
 #include "MiddleScene.h"
 #include "EndScene.h"
@@ -8,11 +9,12 @@ Scene* Scene::sScene = nullptr;
 
 void Scene::Initialize()
 {
+	sScenes[TEST] = new TestScene;
 	sScenes[BEGIN] = new BeginScene;
 	sScenes[MIDDLE] = new MiddleScene;
 	sScenes[END] = new EndScene;
 
-	sScene = sScenes[BEGIN];
+	sScene = sScenes[TEST];
 	sScene->OnStart();
 }
 
@@ -31,9 +33,19 @@ void Scene::Update(float deltaTime)
 	sScene->OnUpdate(deltaTime);
 }
 
-void Scene::Render()
+void Scene::Render(ID2D1HwndRenderTarget* rt)
 {
-	sScene->OnRender();
+	sScene->OnRender(rt);
+}
+
+HRESULT Scene::CreateDevice(ID2D1HwndRenderTarget* rt)
+{
+	return sScene->OnCreateDevice(rt);
+}
+
+void Scene::DiscardDevice()
+{
+	sScene->OnDiscardDevice();
 }
 
 void Scene::Transition(Type type)

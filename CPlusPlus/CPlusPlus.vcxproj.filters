@@ -33,6 +33,9 @@
     <ClCompile Include="MiddleScene.cpp">
       <Filter>Scenes</Filter>
     </ClCompile>
+    <ClCompile Include="TestScene.cpp">
+      <Filter>Scenes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Scene.h">
@@ -45,6 +48,9 @@
       <Filter>Scenes</Filter>
     </ClInclude>
     <ClInclude Include="MiddleScene.h">
+      <Filter>Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="TestScene.h">
       <Filter>Scenes</Filter>
     </ClInclude>
   </ItemGroup>
