@@ -20,8 +20,11 @@ private:
 	ID2D1SolidColorBrush* m_pGreenBrush;
 	ID2D1SolidColorBrush* m_pBlueBrush;
 	RECT mButtonArea;
-	LONG mMargin = 50;
+	D2D1_RECT_F mRect1;
+	D2D1_RECT_F mRect2;
+	LONG mWidth;
+	LONG mHeight;
+	BOOL m_bIntersect = false;
 
 	void Cleanup();
 };
-
