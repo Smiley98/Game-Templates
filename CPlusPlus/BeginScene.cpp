@@ -24,6 +24,6 @@ void BeginScene::OnUpdate(float deltaTime)
 {
 }
 
-void BeginScene::OnRender(ID2D1HwndRenderTarget* rt)
+void BeginScene::OnRender(ID2D1HwndRenderTarget* rt, IDWriteTextFormat* txt)
 {
 }

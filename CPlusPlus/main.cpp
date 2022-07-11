@@ -19,22 +19,62 @@ public:
     App() :
         m_hwnd(NULL),
         m_pDirect2dFactory(NULL),
-        m_pRenderTarget(NULL)
+        m_pDWriteFactory(NULL),
+        m_pRenderTarget(NULL),
+        m_pTextFormat(NULL)
     {}
 
     ~App()
     {
         Scene::Shutdown();
         SafeRelease(&m_pDirect2dFactory);
+        SafeRelease(&m_pDWriteFactory);
         SafeRelease(&m_pRenderTarget);
+        SafeRelease(&m_pTextFormat);
     }
 
     // Register the window class and call methods for instantiating drawing resources
     HRESULT Initialize()
     {
+        // Initialize geometry and font rendering
+        HRESULT hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_pDirect2dFactory);
+        static const WCHAR msc_fontName[] = L"Verdana";
+        static const FLOAT msc_fontSize = 20;
+
+        if (SUCCEEDED(hr))
+        {
+            // Create a DirectWrite factory.
+            hr = DWriteCreateFactory(
+                DWRITE_FACTORY_TYPE_SHARED,
+                __uuidof(m_pDWriteFactory),
+                reinterpret_cast<IUnknown**>(&m_pDWriteFactory)
+            );
+        }
+
+        if (SUCCEEDED(hr))
+        {
+            // Create a DirectWrite text format object.
+            hr = m_pDWriteFactory->CreateTextFormat(
+                msc_fontName,
+                NULL,
+                DWRITE_FONT_WEIGHT_NORMAL,
+                DWRITE_FONT_STYLE_NORMAL,
+                DWRITE_FONT_STRETCH_NORMAL,
+                msc_fontSize,
+                L"", //locale
+                &m_pTextFormat
+            );
+        }
+
+        if (SUCCEEDED(hr))
+        {
+            // Center the text horizontally and vertically.
+            m_pTextFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
+            m_pTextFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+        }
+
         Scene::Initialize();
 
-        HRESULT hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_pDirect2dFactory);
         if (SUCCEEDED(hr))
         {
             // Register the window class.
@@ -162,7 +202,7 @@ private:
             m_pRenderTarget->SetTransform(D2D1::Matrix3x2F::Identity());
             m_pRenderTarget->Clear(D2D1::ColorF(D2D1::ColorF::White));
 
-            Scene::Render(m_pRenderTarget);
+            Scene::Render(m_pRenderTarget, m_pTextFormat);
 
             hr = m_pRenderTarget->EndDraw();
         }
@@ -277,6 +317,8 @@ private:
 
     HWND m_hwnd;
     ID2D1Factory* m_pDirect2dFactory;
+    IDWriteFactory* m_pDWriteFactory;
+    IDWriteTextFormat* m_pTextFormat;
     ID2D1HwndRenderTarget* m_pRenderTarget;
     bool m_bQuit = false;
 };

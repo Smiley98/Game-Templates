@@ -45,7 +45,7 @@ public:
 	static HRESULT CreateDevice(ID2D1HwndRenderTarget* rt);
 	static void DiscardDevice();
 	static void Update(float deltaTime);
-	static void Render(ID2D1HwndRenderTarget* rt);
+	static void Render(ID2D1HwndRenderTarget* rt, IDWriteTextFormat* txt);
 	static void Transition(Type type);
 
 	virtual void OnStart() = 0;
@@ -53,7 +53,7 @@ public:
 	virtual HRESULT OnCreateDevice(ID2D1HwndRenderTarget* rt) = 0;
 	virtual void OnDiscardDevice() = 0;
 	virtual void OnUpdate(float deltaTime) = 0;
-	virtual void OnRender(ID2D1HwndRenderTarget* rt) = 0;
+	virtual void OnRender(ID2D1HwndRenderTarget* rt, IDWriteTextFormat* txt) = 0;
 
 private:
 	static std::array<Scene*, COUNT> sScenes;

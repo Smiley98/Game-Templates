@@ -33,9 +33,9 @@ void Scene::Update(float deltaTime)
 	sScene->OnUpdate(deltaTime);
 }
 
-void Scene::Render(ID2D1HwndRenderTarget* rt)
+void Scene::Render(ID2D1HwndRenderTarget* rt, IDWriteTextFormat* txt)
 {
-	sScene->OnRender(rt);
+	sScene->OnRender(rt, txt);
 }
 
 HRESULT Scene::CreateDevice(ID2D1HwndRenderTarget* rt)

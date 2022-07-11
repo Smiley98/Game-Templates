@@ -23,6 +23,6 @@ void MiddleScene::OnUpdate(float deltaTime)
 {
 }
 
-void MiddleScene::OnRender(ID2D1HwndRenderTarget* rt)
+void MiddleScene::OnRender(ID2D1HwndRenderTarget* rt, IDWriteTextFormat* txt)
 {
 }

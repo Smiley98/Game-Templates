@@ -3,6 +3,8 @@
 extern float gTime;
 
 TestScene::TestScene() :
+    m_pBlackBrush(NULL),
+    m_pWhiteBrush(NULL),
     m_pLightSlateGrayBrush(NULL),
     m_pCornflowerBlueBrush(NULL)
 {
@@ -10,8 +12,7 @@ TestScene::TestScene() :
 
 TestScene::~TestScene()
 {
-    SafeRelease(&m_pLightSlateGrayBrush);
-    SafeRelease(&m_pCornflowerBlueBrush);
+    Cleanup();
 }
 
 void TestScene::OnStart()
@@ -24,11 +25,24 @@ void TestScene::OnFinish()
 
 HRESULT TestScene::OnCreateDevice(ID2D1HwndRenderTarget* rt)
 {
-    // Create a gray brush.
+    // Create a black brush.
     HRESULT hr = rt->CreateSolidColorBrush(
+        D2D1::ColorF(D2D1::ColorF::Black),
+        &m_pBlackBrush
+    );
+
+    // Create a white brush.
+    hr = rt->CreateSolidColorBrush(
+        D2D1::ColorF(D2D1::ColorF::White),
+        &m_pWhiteBrush
+    );
+
+    // Create a gray brush.
+    hr = rt->CreateSolidColorBrush(
         D2D1::ColorF(D2D1::ColorF::LightSlateGray),
         &m_pLightSlateGrayBrush
     );
+
     // Create a blue brush.
     hr = rt->CreateSolidColorBrush(
         D2D1::ColorF(D2D1::ColorF::CornflowerBlue),
@@ -40,8 +54,7 @@ HRESULT TestScene::OnCreateDevice(ID2D1HwndRenderTarget* rt)
 
 void TestScene::OnDiscardDevice()
 {
-    SafeRelease(&m_pLightSlateGrayBrush);
-    SafeRelease(&m_pCornflowerBlueBrush);
+    Cleanup();
 }
 
 void TestScene::OnUpdate(float deltaTime)
@@ -49,7 +62,7 @@ void TestScene::OnUpdate(float deltaTime)
     printf("Frame time: %f. Total time: %f.\n", deltaTime, gTime);
 }
 
-void TestScene::OnRender(ID2D1HwndRenderTarget* rt)
+void TestScene::OnRender(ID2D1HwndRenderTarget* rt, IDWriteTextFormat* txt)
 {
     // Draw a grid background.
     D2D1_SIZE_F rtSize = rt->GetSize();
@@ -96,4 +109,21 @@ void TestScene::OnRender(ID2D1HwndRenderTarget* rt)
 
     // Draw the outline of a rectangle.
     rt->DrawRectangle(&rectangle2, m_pCornflowerBlueBrush);
+
+    static const WCHAR sc_helloWorld[] = L"Hello, World!";
+    rt->DrawText(
+        sc_helloWorld,
+        ARRAYSIZE(sc_helloWorld) - 1,
+        txt,
+        rectangle1,
+        m_pBlackBrush
+    );
+}
+
+void TestScene::Cleanup()
+{
+    SafeRelease(&m_pBlackBrush);
+    SafeRelease(&m_pWhiteBrush);
+    SafeRelease(&m_pLightSlateGrayBrush);
+    SafeRelease(&m_pCornflowerBlueBrush);
 }
