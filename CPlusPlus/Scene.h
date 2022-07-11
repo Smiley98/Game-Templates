@@ -31,7 +31,7 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 #define HINST_THISCOMPONENT ((HINSTANCE)&__ImageBase)
 #endif
 
-using MouseHandler = std::function<void(POINTS)>;
+using MouseHandler = std::function<void(POINT)>;
 
 class Scene
 {
@@ -50,8 +50,8 @@ public:
 	static void DiscardDevice();
 	static void Update(float deltaTime);
 	static void Render(ID2D1HwndRenderTarget* rt, IDWriteTextFormat* txt);
-	static void MouseMove(POINTS cursor);
-	static void MouseClick(POINTS cursor);
+	static void MouseMove(POINT cursor);
+	static void MouseClick(POINT cursor);
 	static void Transition(Type type);
 
 	virtual void OnStart() = 0;

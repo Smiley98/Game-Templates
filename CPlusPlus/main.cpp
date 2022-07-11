@@ -147,7 +147,14 @@ public:
                 }
             }
 
+            // Update using the previous frame's time delta.
             Scene::Update(delta);
+            
+            // It makes more sense to issue draw calls outside of WM_PAINT we want to re-draw every frame (rather than optimizing dirty regions).
+            // If DefWindowProc receives WM_PAINT, it flags the region as clean [no re-draw; ValidateRect(hWnd, NULL)].
+            // Hence, we force a re-draw every frame by externally issuing draw calls!
+            OnRender();
+
             delta = std::chrono::duration<float>(std::chrono::high_resolution_clock::now() - start).count();
             gTime += delta;
         }
@@ -225,6 +232,24 @@ private:
         }
     }
 
+    void OnMouseClick(POINT cursor)
+    {
+        Scene::MouseClick(cursor);
+    }
+
+    void OnMouseMove(POINT cursor)
+    {
+        Scene::MouseMove(cursor);
+    }
+
+    static POINT GetCursor(LPARAM lParam)
+    {
+        POINTS pts = MAKEPOINTS(lParam);
+        POINT pt{};
+        POINTSTOPOINT(pt, pts);
+        return pt;
+    }
+
     // The windows procedure.
     static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
@@ -267,32 +292,15 @@ private:
                 wasHandled = true;
                 break;
 
-                case WM_DISPLAYCHANGE:
-                {
-                    InvalidateRect(hWnd, NULL, FALSE);
-                }
-                result = 0;
-                wasHandled = true;
-                break;
-
-                case WM_PAINT:
-                {
-                    pDemoApp->OnRender();
-                    ValidateRect(hWnd, NULL);
-                }
-                result = 0;
-                wasHandled = true;
-                break;
-
                 case WM_MOUSEMOVE:
                 {
-                    Scene::MouseMove(MAKEPOINTS(lParam));
+                    pDemoApp->OnMouseMove(GetCursor(lParam));
                 }
                 break;
 
                 case WM_LBUTTONUP:
                 {
-                    Scene::MouseClick(MAKEPOINTS(lParam));
+                    pDemoApp->OnMouseClick(GetCursor(lParam));
                 }
                 break;
 

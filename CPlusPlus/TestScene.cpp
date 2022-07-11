@@ -8,13 +8,6 @@ TestScene::TestScene() :
     m_pLightSlateGrayBrush(NULL),
     m_pCornflowerBlueBrush(NULL)
 {
-    mMoveHandler = [this](POINTS cursor) {
-        //printf("Test move: %i, %i.\n", cursor.x, cursor.y);
-    };
-
-    mClickHandler = [this](POINTS cursor) {
-        printf("Test click: %i, %i.\n", cursor.x, cursor.y);
-    };
 }
 
 TestScene::~TestScene()

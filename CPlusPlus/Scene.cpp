@@ -14,7 +14,7 @@ void Scene::Initialize()
 	sScenes[MIDDLE] = new MiddleScene;
 	sScenes[END] = new EndScene;
 
-	sScene = sScenes[TEST];
+	sScene = sScenes[BEGIN];
 	sScene->OnStart();
 }
 
@@ -48,7 +48,7 @@ void Scene::Render(ID2D1HwndRenderTarget* rt, IDWriteTextFormat* txt)
 	sScene->OnRender(rt, txt);
 }
 
-void Scene::MouseMove(POINTS cursor)
+void Scene::MouseMove(POINT cursor)
 {
 	if (sScene->mMoveHandler)
 	{
@@ -56,7 +56,7 @@ void Scene::MouseMove(POINTS cursor)
 	}
 }
 
-void Scene::MouseClick(POINTS cursor)
+void Scene::MouseClick(POINT cursor)
 {
 	if (sScene->mClickHandler)
 	{
