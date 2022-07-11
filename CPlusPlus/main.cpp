@@ -284,17 +284,30 @@ private:
                 wasHandled = true;
                 break;
 
-                case WM_KEYDOWN:
+                case WM_MOUSEMOVE:
                 {
-                    printf("WM_KEYDOWN: 0x%x\n", wParam);
+                    Scene::MouseMove(MAKEPOINTS(lParam));
+                }
+                break;
+
+                case WM_LBUTTONUP:
+                {
+                    Scene::MouseClick(MAKEPOINTS(lParam));
+                }
+                break;
+
+                // This demo doesn't handle key input
+                /*case WM_KEYDOWN:
+                {
+                    //printf("WM_KEYDOWN: 0x%x\n", wParam);
                 }
                 break;
 
                 case WM_KEYUP:
                 {
-                    printf("WM_KEYUP: 0x%x\n", wParam);
+                    //printf("WM_KEYUP: 0x%x\n", wParam);
                 }
-                break;
+                break;*/
 
                 case WM_DESTROY:
                 {

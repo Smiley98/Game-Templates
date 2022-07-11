@@ -8,6 +8,13 @@ TestScene::TestScene() :
     m_pLightSlateGrayBrush(NULL),
     m_pCornflowerBlueBrush(NULL)
 {
+    mMoveHandler = [this](POINTS cursor) {
+        //printf("Test move: %i, %i.\n", cursor.x, cursor.y);
+    };
+
+    mClickHandler = [this](POINTS cursor) {
+        printf("Test click: %i, %i.\n", cursor.x, cursor.y);
+    };
 }
 
 TestScene::~TestScene()
@@ -59,7 +66,7 @@ void TestScene::OnDiscardDevice()
 
 void TestScene::OnUpdate(float deltaTime)
 {
-    printf("Frame time: %f. Total time: %f.\n", deltaTime, gTime);
+    //printf("Frame time: %f. Total time: %f.\n", deltaTime, gTime);
 }
 
 void TestScene::OnRender(ID2D1HwndRenderTarget* rt, IDWriteTextFormat* txt)
@@ -110,6 +117,7 @@ void TestScene::OnRender(ID2D1HwndRenderTarget* rt, IDWriteTextFormat* txt)
     // Draw the outline of a rectangle.
     rt->DrawRectangle(&rectangle2, m_pCornflowerBlueBrush);
 
+    // Draw text within the 1st rectangle.
     static const WCHAR sc_helloWorld[] = L"Hello, World!";
     rt->DrawText(
         sc_helloWorld,

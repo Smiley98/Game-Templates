@@ -28,6 +28,16 @@ void Scene::Shutdown()
 	}
 }
 
+HRESULT Scene::CreateDevice(ID2D1HwndRenderTarget* rt)
+{
+	return sScene->OnCreateDevice(rt);
+}
+
+void Scene::DiscardDevice()
+{
+	sScene->OnDiscardDevice();
+}
+
 void Scene::Update(float deltaTime)
 {
 	sScene->OnUpdate(deltaTime);
@@ -38,14 +48,20 @@ void Scene::Render(ID2D1HwndRenderTarget* rt, IDWriteTextFormat* txt)
 	sScene->OnRender(rt, txt);
 }
 
-HRESULT Scene::CreateDevice(ID2D1HwndRenderTarget* rt)
+void Scene::MouseMove(POINTS cursor)
 {
-	return sScene->OnCreateDevice(rt);
+	if (sScene->mMoveHandler)
+	{
+		sScene->mMoveHandler(cursor);
+	}
 }
 
-void Scene::DiscardDevice()
+void Scene::MouseClick(POINTS cursor)
 {
-	sScene->OnDiscardDevice();
+	if (sScene->mClickHandler)
+	{
+		sScene->mClickHandler(cursor);
+	}
 }
 
 void Scene::Transition(Type type)

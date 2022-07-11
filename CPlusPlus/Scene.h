@@ -1,5 +1,7 @@
 #pragma once
 #include <array>
+#include <functional>
+
 #include <d2d1.h>
 #include <d2d1helper.h>
 #include <dwrite.h>
@@ -29,6 +31,8 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 #define HINST_THISCOMPONENT ((HINSTANCE)&__ImageBase)
 #endif
 
+using MouseHandler = std::function<void(POINTS)>;
+
 class Scene
 {
 public:
@@ -46,6 +50,8 @@ public:
 	static void DiscardDevice();
 	static void Update(float deltaTime);
 	static void Render(ID2D1HwndRenderTarget* rt, IDWriteTextFormat* txt);
+	static void MouseMove(POINTS cursor);
+	static void MouseClick(POINTS cursor);
 	static void Transition(Type type);
 
 	virtual void OnStart() = 0;
@@ -54,6 +60,10 @@ public:
 	virtual void OnDiscardDevice() = 0;
 	virtual void OnUpdate(float deltaTime) = 0;
 	virtual void OnRender(ID2D1HwndRenderTarget* rt, IDWriteTextFormat* txt) = 0;
+
+protected:
+	MouseHandler mMoveHandler = nullptr;
+	MouseHandler mClickHandler = nullptr;
 
 private:
 	static std::array<Scene*, COUNT> sScenes;
