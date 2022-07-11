@@ -31,6 +31,7 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 #define HINST_THISCOMPONENT ((HINSTANCE)&__ImageBase)
 #endif
 
+using TransitionHandler = std::function<void(void)>;
 using MouseHandler = std::function<void(POINT)>;
 
 class Scene
@@ -46,22 +47,27 @@ public:
 
 	static void Initialize();
 	static void Shutdown();
-	static HRESULT CreateDevice(ID2D1HwndRenderTarget* rt);
-	static void DiscardDevice();
+
+	static HRESULT Load(ID2D1HwndRenderTarget* rt);
+	static void Unload();
+
 	static void Update(float deltaTime);
 	static void Render(ID2D1HwndRenderTarget* rt, IDWriteTextFormat* txt);
+
 	static void MouseMove(POINT cursor);
 	static void MouseClick(POINT cursor);
+
 	static void Transition(Type type);
 
-	virtual void OnStart() = 0;
-	virtual void OnFinish() = 0;
-	virtual HRESULT OnCreateDevice(ID2D1HwndRenderTarget* rt) = 0;
-	virtual void OnDiscardDevice() = 0;
+	virtual HRESULT OnLoad(ID2D1HwndRenderTarget* rt) = 0;
+	virtual void OnUnload() = 0;
+
 	virtual void OnUpdate(float deltaTime) = 0;
 	virtual void OnRender(ID2D1HwndRenderTarget* rt, IDWriteTextFormat* txt) = 0;
 
 protected:
+	TransitionHandler mStartHandler = nullptr;
+	TransitionHandler mStopHandler = nullptr;
 	MouseHandler mMoveHandler = nullptr;
 	MouseHandler mClickHandler = nullptr;
 

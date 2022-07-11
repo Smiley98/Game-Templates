@@ -15,15 +15,7 @@ TestScene::~TestScene()
     Cleanup();
 }
 
-void TestScene::OnStart()
-{
-}
-
-void TestScene::OnFinish()
-{
-}
-
-HRESULT TestScene::OnCreateDevice(ID2D1HwndRenderTarget* rt)
+HRESULT TestScene::OnLoad(ID2D1HwndRenderTarget* rt)
 {
     // Create a black brush.
     HRESULT hr = rt->CreateSolidColorBrush(
@@ -52,7 +44,7 @@ HRESULT TestScene::OnCreateDevice(ID2D1HwndRenderTarget* rt)
     return hr;
 }
 
-void TestScene::OnDiscardDevice()
+void TestScene::OnUnload()
 {
     Cleanup();
 }

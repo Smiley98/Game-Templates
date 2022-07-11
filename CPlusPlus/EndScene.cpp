@@ -1,21 +1,13 @@
 #include "EndScene.h"
 
-void EndScene::OnStart()
-{
-}
-
-void EndScene::OnFinish()
-{
-}
-
-HRESULT EndScene::OnCreateDevice(ID2D1HwndRenderTarget* rt)
+HRESULT EndScene::OnLoad(ID2D1HwndRenderTarget* rt)
 {
 	HRESULT hr = S_OK;
 
 	return hr;
 }
 
-void EndScene::OnDiscardDevice()
+void EndScene::OnUnload()
 {
 }
 

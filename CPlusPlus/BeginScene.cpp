@@ -12,15 +12,7 @@ BeginScene::~BeginScene()
 	Cleanup();
 }
 
-void BeginScene::OnStart()
-{
-}
-
-void BeginScene::OnFinish()
-{
-}
-
-HRESULT BeginScene::OnCreateDevice(ID2D1HwndRenderTarget* rt)
+HRESULT BeginScene::OnLoad(ID2D1HwndRenderTarget* rt)
 {
 	D2D1_SIZE_F rtSize = rt->GetSize();
 	LONG width = static_cast<LONG>(rtSize.width);
@@ -63,7 +55,7 @@ HRESULT BeginScene::OnCreateDevice(ID2D1HwndRenderTarget* rt)
 	return hr;
 }
 
-void BeginScene::OnDiscardDevice()
+void BeginScene::OnUnload()
 {
 	Cleanup();
 }
@@ -76,6 +68,15 @@ void BeginScene::OnRender(ID2D1HwndRenderTarget* rt, IDWriteTextFormat* txt)
 {
 	D2D1_RECT_F beginButton = D2D1::Rect(mButtonArea.left, mButtonArea.top, mButtonArea.right, mButtonArea.bottom);
 	rt->FillRectangle(&beginButton, m_bMouseOver ? m_pTealBrush : m_pRedBrush);
+
+	static const WCHAR sc_begin[] = L"Begin!";
+	rt->DrawText(
+		sc_begin,
+		ARRAYSIZE(sc_begin) - 1,
+		txt,
+		beginButton,
+		m_pWhiteBrush
+	);
 }
 
 void BeginScene::Cleanup()

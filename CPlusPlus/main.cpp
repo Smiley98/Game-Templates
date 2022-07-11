@@ -73,8 +73,6 @@ public:
             m_pTextFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
         }
 
-        Scene::Initialize();
-
         if (SUCCEEDED(hr))
         {
             // Register the window class.
@@ -124,17 +122,20 @@ public:
             }
         }
 
+        Scene::Initialize();
+
         return hr;
     }
 
     // Process and dispatch messages
     void GameLoop()
     {
-        while (!m_bQuit)
+        while (true)
         {
             static float delta = 0.0f;
             std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 
+            // Poll events
             MSG msg;
             while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
             {
@@ -143,17 +144,17 @@ public:
 
                 if (msg.message == WM_QUIT)
                 {
-                    m_bQuit = true;
+                    return;
                 }
             }
 
-            // Update using the previous frame's time delta.
-            Scene::Update(delta);
+            // Perform update before rendering
+            Update(delta);
             
             // It makes more sense to issue draw calls outside of WM_PAINT we want to re-draw every frame (rather than optimizing dirty regions).
             // If DefWindowProc receives WM_PAINT, it flags the region as clean [no re-draw; ValidateRect(hWnd, NULL)].
             // Hence, we force a re-draw every frame by externally issuing draw calls!
-            OnRender();
+            Render();
 
             delta = std::chrono::duration<float>(std::chrono::high_resolution_clock::now() - start).count();
             gTime += delta;
@@ -162,7 +163,7 @@ public:
 
 private:
     // Initialize device-dependent resources.
-    HRESULT CreateDeviceResources()
+    HRESULT Load()
     {
         HRESULT hr = S_OK;
 
@@ -183,25 +184,31 @@ private:
                 &m_pRenderTarget
             );
 
-            hr = SUCCEEDED(hr) ? Scene::CreateDevice(m_pRenderTarget) : hr;
+            hr = SUCCEEDED(hr) ? Scene::Load(m_pRenderTarget) : hr;
         }
 
         return hr;
     }
 
     // Release device-dependent resource.
-    void DiscardDeviceResources()
+    void Unload()
     {
-        Scene::DiscardDevice();
+        Scene::Unload();
         SafeRelease(&m_pRenderTarget);
     }
 
+    // Update using the previous frame's time delta.
+    void Update(float deltaTime)
+    {
+        Scene::Update(deltaTime);
+    }
+
     // Draw content.
-    HRESULT OnRender()
+    HRESULT Render()
     {
         HRESULT hr = S_OK;
 
-        hr = CreateDeviceResources();
+        hr = Load();
 
         if (SUCCEEDED(hr))
         {
@@ -217,7 +224,7 @@ private:
         if (hr == D2DERR_RECREATE_TARGET)
         {
             hr = S_OK;
-            DiscardDeviceResources();
+            Unload();
         }
 
         return hr;
@@ -341,7 +348,6 @@ private:
     IDWriteFactory* m_pDWriteFactory;
     IDWriteTextFormat* m_pTextFormat;
     ID2D1HwndRenderTarget* m_pRenderTarget;
-    bool m_bQuit = false;
 };
 
 bool RedirectConsoleIO()

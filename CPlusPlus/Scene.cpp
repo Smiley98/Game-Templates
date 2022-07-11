@@ -15,7 +15,10 @@ void Scene::Initialize()
 	sScenes[END] = new EndScene;
 
 	sScene = sScenes[BEGIN];
-	sScene->OnStart();
+	if (sScene->mStartHandler)
+	{
+		sScene->mStartHandler();
+	}
 }
 
 void Scene::Shutdown()
@@ -28,14 +31,22 @@ void Scene::Shutdown()
 	}
 }
 
-HRESULT Scene::CreateDevice(ID2D1HwndRenderTarget* rt)
+HRESULT Scene::Load(ID2D1HwndRenderTarget* rt)
 {
-	return sScene->OnCreateDevice(rt);
+	HRESULT hr = S_OK;
+	for (Scene* scene : sScenes)
+	{
+		hr |= scene->OnLoad(rt);
+	}
+	return hr;
 }
 
-void Scene::DiscardDevice()
+void Scene::Unload()
 {
-	sScene->OnDiscardDevice();
+	for (Scene* scene : sScenes)
+	{
+		scene->OnUnload();
+	}
 }
 
 void Scene::Update(float deltaTime)
@@ -66,7 +77,13 @@ void Scene::MouseClick(POINT cursor)
 
 void Scene::Transition(Type type)
 {
-	sScene->OnFinish();
+	if (sScene->mStopHandler)
+	{
+		sScene->mStopHandler();
+	}
 	sScene = sScenes[type];
-	sScene->OnStart();
+	if (sScene->mStartHandler)
+	{
+		sScene->mStartHandler();
+	}
 }
